@@ -90,3 +90,11 @@ class OTPVerification(models.Model):
 
     def __str__(self):
         return f"{self.phone} - {self.otp_code} ({'Verified' if self.is_verified else 'Pending'})"
+
+class BikeImage(models.Model):
+    bike = models.ForeignKey('Bike', related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='bikes/gallery/')
+    caption = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return f"{self.bike} Image"

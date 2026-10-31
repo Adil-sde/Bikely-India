@@ -1,16 +1,26 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Bike, InspectionReport, Booking
+from .models import Bike, InspectionReport, Booking, BikeImage
+
+
+class BikeImageInline(admin.TabularInline):
+    model = BikeImage
+    extra = 10     # Admin page par ek sath 10 photos upload karne ke dabbe dikhenge
+    max_num = 10   # Maximum 10 photos allow karega
+
 
 @admin.register(Bike)
 class BikeAdmin(admin.ModelAdmin):
     list_display = ('reg_number', 'brand', 'model_name', 'year', 'expected_price', 'status', 'created_at')
     list_filter = ('status', 'brand', 'year')
     search_fields = ('reg_number', 'model_name', 'brand')
+    inlines = [BikeImageInline]  # <-- Yahan photo inline jud gaya
+
 
 @admin.register(InspectionReport)
 class InspectionReportAdmin(admin.ModelAdmin):
     list_display = ('bike', 'inspector_name', 'overall_rating', 'engine_sound', 'inspected_at')
+
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):

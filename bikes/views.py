@@ -56,6 +56,8 @@ def calculate_bike_valuation(request):
 # 2. Seller API: Customer bike bechne ke liye submit karega
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
 def submit_sell_request(request):
     serializer = BikeSellRequestSerializer(data=request.data)
     if serializer.is_valid():

@@ -198,6 +198,52 @@
     </div>
   </div>
 
+  <!-- Bike Details & Gallery Modal -->
+  <div id="bikeDetailsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center pb-3 border-b">
+        <div>
+          <h3 id="modalBikeName" class="text-lg font-bold text-slate-900">Bike Details</h3>
+          <p id="modalBikeReg" class="text-xs text-slate-500 font-mono"></p>
+        </div>
+        <button onclick="document.getElementById('bikeDetailsModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold leading-none">&times;</button>
+      </div>
+
+      <!-- Main Photo -->
+      <div class="mt-4 rounded-xl overflow-hidden bg-slate-100 aspect-[16/9]">
+        <img id="detailMainImg" src="" class="w-full h-full object-cover">
+      </div>
+
+      <!-- Thumbnails / Multi-images -->
+      <div id="detailGallery" class="flex gap-2 mt-3 overflow-x-auto pb-2"></div>
+
+      <!-- Specs & Details -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-xs">
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px]">Year</span>
+          <span id="detailYear" class="font-bold text-slate-800"></span>
+        </div>
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px]">Kilometers</span>
+          <span id="detailKm" class="font-bold text-slate-800"></span>
+        </div>
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px]">Condition</span>
+          <span id="detailRating" class="font-bold text-emerald-600"></span>
+        </div>
+        <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+          <span class="text-slate-400 block text-[10px]">Price</span>
+          <span id="detailPrice" class="font-bold text-slate-900"></span>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+        <button onclick="document.getElementById('bikeDetailsModal').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Close</button>
+        <button id="modalBookNowBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2.5 rounded-lg shadow">Book Test Ride (₹99)</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Booking Form Modal -->
   <div id="bookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
@@ -424,7 +470,7 @@
         const km = (bike.km_driven || 0).toLocaleString('en-IN');
 
         return `
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col justify-between group">
+        <div onclick="openBikeDetails(${bike.id})" class="cursor-pointer bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col justify-between group">
           <div class="relative w-full aspect-[16/10] bg-slate-100 overflow-hidden">
             <img src="${bikeImg}" alt="${bike.model_name || 'Bike'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
             <div class="absolute top-2.5 left-2.5 flex items-center space-x-1 bg-emerald-600/95 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
@@ -453,7 +499,7 @@
                 <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Offer Price</span>
                 <span class="text-base sm:text-lg font-black text-slate-900">₹${price}</span>
               </div>
-              <button onclick="openBookingModal(${bike.id}, '${bike.brand} ${bike.model_name}')" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-xs transition">
+              <button onclick="event.stopPropagation(); openBookingModal(${bike.id}, '${bike.brand} ${bike.model_name}')" class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-xs transition">
                 Book for ₹99
               </button>
             </div>
@@ -777,6 +823,56 @@
     }
     // Auto-load catalog on page ready
     document.addEventListener('DOMContentLoaded', loadCatalog);
+
+    function openBikeDetails(bikeId) {
+      const bike = allLiveBikes.find(b => b.id === bikeId);
+      if (!bike) return;
+
+      document.getElementById('modalBikeName').innerText = `${bike.brand} ${bike.model_name}`;
+      document.getElementById('modalBikeReg').innerText = bike.reg_number || '';
+      document.getElementById('detailYear').innerText = bike.year || 'N/A';
+      document.getElementById('detailKm').innerText = `${(bike.km_driven || 0).toLocaleString('en-IN')} KM`;
+      document.getElementById('detailRating').innerText = bike.overall_rating ? `★ ${bike.overall_rating}/5` : 'Verified';
+      document.getElementById('detailPrice').innerText = `₹${parseFloat(bike.selling_price || bike.expected_price || 0).toLocaleString('en-IN')}`;
+
+      // Images handle karna
+      const mainImg = bike.main_image || bike.image || bike.image_url || 'https://placehold.co/600x400/e2e8f0/475569?text=Bike+Photo';
+      const mainImgElem = document.getElementById('detailMainImg');
+      mainImgElem.src = mainImg;
+
+      // Gallery thumbnails (Backend images array)
+      const galleryDiv = document.getElementById('detailGallery');
+      galleryDiv.innerHTML = '';
+      
+      const allImages = [mainImg];
+      if (bike.images && Array.isArray(bike.images)) {
+        bike.images.forEach(imgObj => {
+          const url = typeof imgObj === 'string' ? imgObj : (imgObj.image || imgObj.image_url);
+          if (url && !allImages.includes(url)) allImages.push(url);
+        });
+      }
+
+      if (allImages.length > 1) {
+        allImages.forEach(imgUrl => {
+          const thumb = document.createElement('img');
+          thumb.src = imgUrl;
+          thumb.className = "w-16 h-12 object-cover rounded-lg border border-slate-200 cursor-pointer hover:opacity-80 flex-shrink-0";
+          thumb.onclick = () => { mainImgElem.src = imgUrl; };
+          galleryDiv.appendChild(thumb);
+        });
+        galleryDiv.classList.remove('hidden');
+      } else {
+        galleryDiv.classList.add('hidden');
+      }
+
+      // Modal Book Now Button Action
+      document.getElementById('modalBookNowBtn').onclick = () => {
+        document.getElementById('bikeDetailsModal').classList.add('hidden');
+        openBookingModal(bike.id, `${bike.brand} ${bike.model_name}`);
+      };
+
+      document.getElementById('bikeDetailsModal').classList.remove('hidden');
+    }
   </script>
 </body>
 </html>

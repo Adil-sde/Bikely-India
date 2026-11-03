@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import Bike, InspectionReport, Booking
+from .models import Bike, InspectionReport, Booking, BikeImage
+
+class BikeImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BikeImage
+        fields = ['id', 'image', 'caption']
 
 class InspectionReportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,10 +13,15 @@ class InspectionReportSerializer(serializers.ModelSerializer):
 
 class BikeCatalogSerializer(serializers.ModelSerializer):
     inspection = InspectionReportSerializer(read_only=True)
+    images = BikeImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Bike
-        fields = ['id', 'reg_number', 'brand', 'model_name', 'year', 'km_driven', 'expected_price', 'status', 'image', 'inspection']
+        fields = [
+            'id', 'reg_number', 'brand', 'model_name', 'year', 
+            'km_driven', 'expected_price', 'status', 'image', 
+            'inspection', 'images'
+        ]
 
 class BikeSellRequestSerializer(serializers.ModelSerializer):
     class Meta:
